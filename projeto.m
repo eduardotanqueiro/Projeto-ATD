@@ -144,21 +144,24 @@ lie_to_stand_Exp8_Us4 = get_activity_file(8,4,12,labels);
 %%
 %2
 % Print Signal With labels on plot
-print_with_labels(dataExp1user1,labels,activityLabels,1);
+print_with_labels(dataExp4user2,labels,activityLabels,4);
 
 %%
 %3
-
-fs = 50; %Hz, sampling frequency
-Ts = 1/fs;
-
-
-DFT_activity(dataExp4user2,walk_Exp4_Us2,activityLabels,1,1,0);
+%3.1/3.2
+[x,y,z] = DFT_activity(dataExp2user1,walkUp_Exp2_Us1,activityLabels,2,1,1);
     
+
+%3.3
+[x,y,z] = DFT_activity(dataExp1user1,walk_Exp1_Us1,activityLabels,1,0,0);
+[x,y,z] = DFT_activity(dataExp3user2,walk_Exp3_Us2,activityLabels,1,0,0);
+[x,y,z] = DFT_activity(dataExp5user3,walk_Exp5_Us3,activityLabels,1,0,0);
+[x,y,z] = DFT_activity(dataExp7user4,walk_Exp7_Us4,activityLabels,1,0,0);
+
 
 function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude,plot_freqs)
     
-    fs = 50;
+    fs = 50; %Hz, sampling frequency
     x = [];
     y = [];
     z = [];
@@ -168,32 +171,29 @@ function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude
         dft_x = fftshift( fft( file(times(i,1):times(i,2) ,1) ) ) ;
         dft_y = fftshift( fft( file(times(i,1):times(i,2) ,2) ) ) ;
         dft_z = fftshift( fft( file(times(i,1):times(i,2) ,3) ) ) ;
-
-        %clean
-        dft_x(abs(dft_x)<0.001)=0;
-        dft_y(abs(dft_y)<0.001)=0;
-        dft_z(abs(dft_z)<0.001)=0;
         
-        zr = find(dft_x == 0);
-        dft_x(zr) = 0;
-
-        zr = find(dft_y == 0);
-        dft_y(zr) = 0;
-
-        zr = find(dft_z == 0);
-        dft_z(zr) = 0;
-
         %get positive values
         m_x = abs(dft_x);
         m_y = abs(dft_y);
         m_z = abs(dft_z);
+        
+        N = length(dft_x);
+        fq = [-fs/2:fs/N:fs/2-fs/N];
+
+        %clean
+        m_x( m_x<0.001)=0;
+        m_y( m_y<0.001)=0;
+        m_z( m_z<0.001 )=0;
+        
+        m_x( abs(fq) <0.15) = 0;
+        m_y( abs(fq) <0.15) = 0;
+        m_z( abs(fq) <0.15) = 0;
 
         threshold_x = 0.8*max(m_x);
         threshold_y = 0.8*max(m_y);
         threshold_z = 0.8*max(m_z);
 
-        N = length(dft_x);
-        fq = [-fs/2:fs/N:fs/2-fs/N];
+
 
         if plot_magnitude == 1
             figure(4);
@@ -229,33 +229,46 @@ function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude
         %erro algures aqui
         %X
         [pks,locs] = findpeaks(m_x,'MinPeakHeight',threshold_x);
-        f_relevant_x = fq(locs)
-        disp(find(m_x>threshold_x))
-        %x = [x,f_relevant_x(find(f_relevant_x>0))];
+        f_relevant_x = fq(locs);
+        x = [x,f_relevant_x( f_relevant_x>0 )];
         
         %Y
         [pks,locs] = findpeaks(m_y,'MinPeakHeight',threshold_y);
         f_relevant_y = fq(locs);
-        disp(find(m_y>threshold_y))
-        %y = [y,f_relevant_y(find(f_relevant_y>0))]; 
+        y = [y,f_relevant_y( f_relevant_y>0 )]; 
 
         %Z
         [pks,locs] = findpeaks(m_z,'MinPeakHeight',threshold_z);
-        f_relevant_z = fq(locs)
-        disp(find(m_z>threshold_z))
-        %z = [z,f_relevant_z(find(f_relevant_z>0))];
+        f_relevant_z = fq(locs);
+        z = [z,f_relevant_z( f_relevant_z>0 )];
         
+
         if plot_freqs == 1
             
             figure(5);
             m_x_zeros = m_x;
-            m_x_zeros( m_x_zeros < threshold_x) = 0;
-
+            for k =1:length(fq) 
+                if( ~ismember(fq(k),f_relevant_x))
+                    m_x_zeros(k) = 0;
+                end
+            end
+            %m_x_zeros( m_x_zeros < threshold_x) = 0;
+            
             m_y_zeros = m_y;
-            m_y_zeros( m_y_zeros < threshold_y) = 0;
+            for k =1:length(fq) 
+                if( ~ismember(fq(k),f_relevant_y))
+                    m_y_zeros(k) = 0;
+                end
+            end
+            %m_y_zeros( m_y_zeros < threshold_y) = 0;
 
             m_z_zeros = m_z;
-            m_z_zeros( m_z_zeros < threshold_z) = 0;
+            for k =1:length(fq) 
+                if( ~ismember(fq(k),f_relevant_z))
+                    m_z_zeros(k) = 0;
+                end
+            end
+            %m_z_zeros( m_z_zeros < threshold_z) = 0;
 
             %plot relevant freqs
             nexttile;
@@ -286,12 +299,9 @@ end
 
 
 function [] = print_with_labels(file_data,labels,activityLabels,experiencia)
-    
-    nexttile
-    plot([1:length(file_data)],file_data(:,1))
-    title("X")
-    
-    i = 1;
+   
+      i = 1;
+    j = i;
     x_vals = [];
     activity = {};
     
@@ -302,12 +312,21 @@ function [] = print_with_labels(file_data,labels,activityLabels,experiencia)
 
     while (labels(1,i) == experiencia)
         x_vals = [ x_vals, labels(4,i)];
-        activity{i} = activityLabels{2}{labels(3,i)};
+        activity{j} = activityLabels{2}{labels(3,i)};
+        
         i = i+1;
+        j = j+1;
     end
-   
-    xticks(x_vals);
+    
+
+    %X
+    nexttile
+    plot([1:length(file_data)],file_data(:,1))
+    title("X")
+
+      xticks(x_vals);
     xticklabels(activity)
+
     
     %Y
     nexttile
