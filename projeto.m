@@ -24,7 +24,7 @@ dataExp7user4 = fscanf(fileExp7user4,formatSpec,[3 Inf])';
 dataExp8user4 = fscanf(fileExp8user4,formatSpec,[3 Inf])';
 
 
-%%
+
 %Import Activity Labels
 fileLabels = fopen('labels.txt','r');
 fileActivityLabels = fopen('activity_labels.txt','r');
@@ -32,7 +32,6 @@ fileActivityLabels = fopen('activity_labels.txt','r');
 labels = fscanf(fileLabels,'%d %d %d %d %d',[5 Inf]);
 activityLabels = textscan(fileActivityLabels,'%d%s');
 
-%%
 %Split activities
 walk_Exp1_Us1 = get_activity_file(1,1,1,labels);
 walk_Exp2_Us1 = get_activity_file(2,1,1,labels);
@@ -144,41 +143,409 @@ lie_to_stand_Exp8_Us4 = get_activity_file(8,4,12,labels);
 %%
 %2
 % Print Signal With labels on plot
-print_with_labels(dataExp4user2,labels,activityLabels,4);
+print_with_labels(dataExp7user4,labels,activityLabels,7);
 
 %%
 %3
 %3.1/3.2
-[x,y,z] = DFT_activity(dataExp2user1,walkUp_Exp2_Us1,activityLabels,2,1,1);
+%[x,y,z] = DFT_activity(dataExp2user1,walkUp_Exp2_Us1,activityLabels,2,0,0);
     
+%decidir quais frequencias ficam para cada atividade
 
-%3.3
-[x,y,z] = DFT_activity(dataExp1user1,walk_Exp1_Us1,activityLabels,1,0,0);
-[x,y,z] = DFT_activity(dataExp3user2,walk_Exp3_Us2,activityLabels,1,0,0);
-[x,y,z] = DFT_activity(dataExp5user3,walk_Exp5_Us3,activityLabels,1,0,0);
-[x,y,z] = DFT_activity(dataExp7user4,walk_Exp7_Us4,activityLabels,1,0,0);
+%3.2
+x = [];
+y = [];
+z = [];
+
+%walk
+[auxx,auxy,auxz] = DFT_activity(dataExp1user1,walk_Exp1_Us1,activityLabels,1,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp2user1,walk_Exp2_Us1,activityLabels,1,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp3user2,walk_Exp3_Us2,activityLabels,1,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp4user2,walk_Exp4_Us2,activityLabels,1,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp5user3,walk_Exp5_Us3,activityLabels,1,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp6user3,walk_Exp6_Us3,activityLabels,1,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp7user4,walk_Exp7_Us4,activityLabels,1,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp8user4,walk_Exp8_Us4,activityLabels,1,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+
+disp("Walk")
+[x_walk,y_walk,z_walk] = get_freqs_filtered(x,y,z)
 
 
+%walk upwards
+x = [];
+y = [];
+z = [];
+
+[auxx,auxy,auxz] = DFT_activity(dataExp1user1,walkUp_Exp1_Us1,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp2user1,walkUp_Exp2_Us1,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp3user2,walkUp_Exp3_Us2,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp4user2,walkUp_Exp4_Us2,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp5user3,walkUp_Exp5_Us3,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp6user3,walkUp_Exp6_Us3,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp7user4,walkUp_Exp7_Us4,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp8user4,walkUp_Exp8_Us4,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+
+disp("Walk up Freqs")
+[x_walkUp,y_walkUp,z_walkUp] = get_freqs_filtered(x,y,z)
+
+%walk down
+x = [];
+y = [];
+z = [];
+
+[auxx,auxy,auxz] = DFT_activity(dataExp1user1,walkDown_Exp1_Us1,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp2user1,walkDown_Exp2_Us1,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp3user2,walkDown_Exp3_Us2,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp4user2,walkDown_Exp4_Us2,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp5user3,walkDown_Exp5_Us3,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp6user3,walkDown_Exp6_Us3,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp7user4,walkDown_Exp7_Us4,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp8user4,walkDown_Exp8_Us4,activityLabels,2,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+disp("Walk Down Freqs")
+[x_walkDown,y_walkDown,z_walkDown] = get_freqs_filtered(x,y,z)
+
+%Sit
+x = [];
+y = [];
+z = [];
+[auxx,auxy,auxz] = DFT_activity(dataExp1user1,sit_Exp1_Us1,activityLabels,4,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp2user1,sit_Exp2_Us1,activityLabels,4,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp3user2,sit_Exp3_Us2,activityLabels,4,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp4user2,sit_Exp4_Us2,activityLabels,4,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp5user3,sit_Exp5_Us3,activityLabels,4,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp6user3,sit_Exp6_Us3,activityLabels,4,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp7user4,sit_Exp7_Us4,activityLabels,4,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp8user4,sit_Exp8_Us4,activityLabels,4,0,0);
+
+disp("Sit Freqs")
+[x_sit,y_sit,z_sit] = get_freqs_filtered(x,y,z)
+
+%Stand
+x = [];
+y = [];
+z = [];
+[auxx,auxy,auxz] = DFT_activity(dataExp1user1,stand_Exp1_Us1,activityLabels,5,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp2user1,stand_Exp2_Us1,activityLabels,5,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp3user2,stand_Exp3_Us2,activityLabels,5,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp4user2,stand_Exp4_Us2,activityLabels,5,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp5user3,stand_Exp5_Us3,activityLabels,5,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp6user3,stand_Exp6_Us3,activityLabels,5,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp7user4,stand_Exp7_Us4,activityLabels,5,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp8user4,stand_Exp8_Us4,activityLabels,5,0,0);
+
+disp("Stand Freqs")
+[x_stand,y_stand,z_stand] = get_freqs_filtered(x,y,z)
+
+
+%Lay
+x = [];
+y = [];
+z = [];
+[auxx,auxy,auxz] = DFT_activity(dataExp1user1,lay_Exp1_Us1,activityLabels,6,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp2user1,lay_Exp2_Us1,activityLabels,6,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp3user2,lay_Exp3_Us2,activityLabels,6,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp4user2,lay_Exp4_Us2,activityLabels,6,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp5user3,lay_Exp5_Us3,activityLabels,6,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp6user3,lay_Exp6_Us3,activityLabels,6,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp7user4,lay_Exp7_Us4,activityLabels,6,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp8user4,lay_Exp8_Us4,activityLabels,6,0,0);
+
+disp("Lay Freqs")
+[x_lay,y_lay,z_lay] = get_freqs_filtered(x,y,z)
+
+%Stand to sit
+x = [];
+y = [];
+z = [];
+[auxx,auxy,auxz] = DFT_activity(dataExp1user1,stand_to_sit_Exp1_Us1,activityLabels,7,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp2user1,stand_to_sit_Exp2_Us1,activityLabels,7,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp3user2,stand_to_sit_Exp3_Us2,activityLabels,7,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp4user2,stand_to_sit_Exp4_Us2,activityLabels,7,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp5user3,stand_to_sit_Exp5_Us3,activityLabels,7,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp6user3,stand_to_sit_Exp6_Us3,activityLabels,7,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp7user4,stand_to_sit_Exp7_Us4,activityLabels,7,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp8user4,stand_to_sit_Exp8_Us4,activityLabels,7,0,0);
+
+disp("Stand to sit Freqs")
+[x_stand_to_sit,y_stand_to_sit,z_stand_to_sit] = get_freqs_filtered(x,y,z)
+
+%Sit to stand
+x = [];
+y = [];
+z = [];
+[auxx,auxy,auxz] = DFT_activity(dataExp1user1,sit_to_stand_Exp1_Us1,activityLabels,8,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp2user1,sit_to_stand_Exp2_Us1,activityLabels,8,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp3user2,sit_to_stand_Exp3_Us2,activityLabels,8,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp4user2,sit_to_stand_Exp4_Us2,activityLabels,8,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp5user3,sit_to_stand_Exp5_Us3,activityLabels,8,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp6user3,sit_to_stand_Exp6_Us3,activityLabels,8,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp7user4,sit_to_stand_Exp7_Us4,activityLabels,8,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp8user4,sit_to_stand_Exp8_Us4,activityLabels,8,0,0);
+
+disp("Sit to stand Freqs")
+[x_sit_to_stand,y_sit_to_stand,z_sit_to_stand] = get_freqs_filtered(x,y,z)
+
+%Sit to lie
+x = [];
+y = [];
+z = [];
+[auxx,auxy,auxz] = DFT_activity(dataExp1user1,sit_to_lie_Exp1_Us1,activityLabels,9,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp2user1,sit_to_lie_Exp2_Us1,activityLabels,9,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp3user2,sit_to_lie_Exp3_Us2,activityLabels,9,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp4user2,sit_to_lie_Exp4_Us2,activityLabels,9,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp5user3,sit_to_lie_Exp5_Us3,activityLabels,9,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp6user3,sit_to_lie_Exp6_Us3,activityLabels,9,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp7user4,sit_to_lie_Exp7_Us4,activityLabels,9,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+[auxx,auxy,auxz] = DFT_activity(dataExp8user4,sit_to_lie_Exp8_Us4,activityLabels,9,0,0);
+
+disp("Sit to lioe Freqs")
+[x_sit_to_lie,y_sit_to_lie,z_sit_to_lie] = get_freqs_filtered(x,y,z)
+
+%3.5
+function[num_verified, num_not_identified] = try_identify(file,times,ativity_freqs_ranges)
+    
+    %a - numero de vezes que a atividade aparece neste ficheiro
+    [a b] = size(times);
+
+    %if activity only appears once in the file
+    if a == 1
+        flag_line = 1;
+    else
+        flag_line = 0;
+    end
+
+    num_verified = 0;
+    num_not_identified = a;
+
+    for i = 1:length(times)
+        
+        
+        if flag_line == 1
+            dft_x = fftshift( fft( file(times(1):times(2) ,1) ) ) ;
+            dft_y = fftshift( fft( file(times(1):times(2) ,2) ) ) ;
+            dft_z = fftshift( fft( file(times(1):times(2) ,3) ) ) ;
+        else
+            dft_x = fftshift( fft( file(times(i,1):times(i,2) ,1) ) ) ;
+            dft_y = fftshift( fft( file(times(i,1):times(i,2) ,2) ) ) ;
+            dft_z = fftshift( fft( file(times(i,1):times(i,2) ,3) ) ) ;
+        end
+
+        N = length(dft_x);
+        fq = [-fs/2:fs/N:fs/2-fs/N];
+
+        %get positive values
+        m_x = abs(dft_x)/N;
+        m_y = abs(dft_y)/N;
+        m_z = abs(dft_z)/N;
+        
+
+        %clean
+        m_x( m_x<0.001)=0;
+        m_y( m_y<0.001)=0;
+        m_z( m_z<0.001 )=0;
+        
+        m_x( abs(fq) <0.15) = 0;
+        m_y( abs(fq) <0.15) = 0;
+        m_z( abs(fq) <0.15) = 0;
+
+        threshold_x = 0.8*max(m_x);
+        threshold_y = 0.8*max(m_y);
+        threshold_z = 0.8*max(m_z);
+
+
+        %find relevant frequencies for each axis
+        %X
+        [pks,locs] = findpeaks(m_x,'MinPeakHeight',threshold_x);
+        f_relevant_x = fq(locs);
+        x = [x,f_relevant_x( f_relevant_x>0 )];
+        
+        %Y
+        [pks,locs] = findpeaks(m_y,'MinPeakHeight',threshold_y);
+        f_relevant_y = fq(locs);
+        y = [y,f_relevant_y( f_relevant_y>0 )]; 
+
+        %Z
+        [pks,locs] = findpeaks(m_z,'MinPeakHeight',threshold_z);
+        f_relevant_z = fq(locs);
+        z = [z,f_relevant_z( f_relevant_z>0 )];
+
+        %TODO
+        %CHECKAR SE ESTES VALORES ESTÃO ENTRE OS INTERVALOS ESTABELECIDOS
+        %NO 3.2
+
+        
+    end
+
+end
+
+%3.2
+function[xf,yf,zf] = get_freqs_filtered(x,y,z)
+        
+    xf = [];
+    yf = [];
+    zf = [];
+    step = 2;
+    
+    %X
+    for k = 0:step:max(x)
+        
+        intervalo = x( x>k &x <k+step );
+
+        desvio_pad = std(intervalo);
+        med = mean( intervalo );
+        nr_elem = length( intervalo );
+
+        xf = [xf;[med-desvio_pad,med+desvio_pad,nr_elem]];
+    end
+    
+    %filter the frequencias by the groups that have the most  values
+    %criar intervalo com base na media e no desvio padrao
+    %meter a 0 caso o limite inferior seja inferior a 0
+    number_max_freqs = max(xf(:,3));
+    xf = xf( xf(:,3) >= 0.5*number_max_freqs , 1:2 );
+    xf( : , xf(:,1) < 0) = 0;
+
+    %Y
+    for k = 0:step:max(y)
+        
+        intervalo = y( y>k & y <k+step );
+
+        desvio_pad = std(intervalo);
+        med = mean( intervalo );
+        nr_elem = length( intervalo );
+
+        yf = [yf;[med-desvio_pad,med+desvio_pad,nr_elem]];
+    end
+    
+    number_max_freqs = max(yf(:,3));
+    yf = yf( yf(:,3) >= 0.5*number_max_freqs , 1:2 );
+    yf( : , yf(:,1) < 0) = 0;
+
+    %Z
+    for k = 0:step:max(z)
+        
+        intervalo = z( z>k & z <k+step );
+
+        desvio_pad = std(intervalo);
+        med = mean( intervalo );
+        nr_elem = length( intervalo );
+
+        zf = [zf;[med-desvio_pad,med+desvio_pad,nr_elem]];
+    end
+
+    number_max_freqs = max(zf(:,3));
+    zf = zf( zf(:,3) >= 0.5*number_max_freqs , 1:2 );
+    zf( : , zf(:,1) < 0) = 0;
+
+end
+
+
+%3.1
 function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude,plot_freqs)
     
     fs = 50; %Hz, sampling frequency
     x = [];
     y = [];
     z = [];
+    
+    [a b] = size(times);
+    
+    %if activity only appears once in the file
+    if a == 1
+        flag_line = 1;
+    else
+        flag_line = 0;
+    end
+
 
     for i = 1:length(times)
         
-        dft_x = fftshift( fft( file(times(i,1):times(i,2) ,1) ) ) ;
-        dft_y = fftshift( fft( file(times(i,1):times(i,2) ,2) ) ) ;
-        dft_z = fftshift( fft( file(times(i,1):times(i,2) ,3) ) ) ;
         
-        %get positive values
-        m_x = abs(dft_x);
-        m_y = abs(dft_y);
-        m_z = abs(dft_z);
-        
+        if flag_line == 1
+            dft_x = fftshift( fft( file(times(1):times(2) ,1) ) ) ;
+            dft_y = fftshift( fft( file(times(1):times(2) ,2) ) ) ;
+            dft_z = fftshift( fft( file(times(1):times(2) ,3) ) ) ;
+        else
+            dft_x = fftshift( fft( file(times(i,1):times(i,2) ,1) ) ) ;
+            dft_y = fftshift( fft( file(times(i,1):times(i,2) ,2) ) ) ;
+            dft_z = fftshift( fft( file(times(i,1):times(i,2) ,3) ) ) ;
+        end
+
         N = length(dft_x);
         fq = [-fs/2:fs/N:fs/2-fs/N];
+
+        %get positive values
+        m_x = abs(dft_x)/N;
+        m_y = abs(dft_y)/N;
+        m_z = abs(dft_z)/N;
+        
+
 
         %clean
         m_x( m_x<0.001)=0;
