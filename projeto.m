@@ -143,7 +143,7 @@ lie_to_stand_Exp8_Us4 = get_activity_file(8,4,12,labels);
 %%
 %2
 % Print Signal With labels on plot
-print_with_labels(dataExp7user4,labels,activityLabels,7);
+print_with_labels(dataExp5user3,labels,activityLabels,5);
 
 %%
 %3
@@ -227,6 +227,7 @@ x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 disp("Walk Down Freqs")
 [x_walkDown,y_walkDown,z_walkDown] = get_freqs_filtered(x,y,z)
+
 
 %Sit
 x = [];
@@ -364,8 +365,37 @@ x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp8user4,sit_to_lie_Exp8_Us4,activityLabels,9,0,0);
 
-disp("Sit to lioe Freqs")
+disp("Sit to lie Freqs")
 [x_sit_to_lie,y_sit_to_lie,z_sit_to_lie] = get_freqs_filtered(x,y,z)
+%%
+%3.3
+%Calcular passos para ativdadas dinâmicas
+num_steps_walk = calculate_steps(x_walk)
+num_steps_walkUp = calculate_steps(x_walkUp)
+num_steps_walkDown = calculate_steps(x_walkDown)
+
+
+%%
+
+%3.3
+function[num_steps] = calculate_steps(freqs)
+    
+    freqs_relevantes = [];
+    [a b] = size(freqs);
+    
+    %Correr todos os intervalos das frequencias relevantes (só estamos a
+    %receber 1 eixo aqui)
+    for i = 1:a
+        get_freq = mean(freqs(i)); %fazer a media do intervalo
+        freqs_relevantes = [ freqs_relevantes ; get_freq]; %adicionar na matriz de frequencias relevantes
+
+    end
+    
+    %Número de passos por minuto é 60 (segundos) a dividir pelo Período,
+    %isto é, o tempo de 1 ciclo completo. 60/ (1/freq)
+    num_steps = 60/(1/mean(freqs_relevantes));
+
+end
 
 %3.5
 function[num_verified, num_not_identified] = try_identify(file,times,ativity_freqs_ranges)
