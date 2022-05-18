@@ -374,9 +374,17 @@ num_steps_walk = calculate_steps(x_walk)
 num_steps_walkUp = calculate_steps(x_walkUp)
 num_steps_walkDown = calculate_steps(x_walkDown)
 
+%%
+%3.4
+%mean transition size
+%act = labels( 4:5, labels(3,:) >= 6);
+%med_transicao = abs( sum(act(2,:)) - sum(act(1,:)) ) / length(act);
+
+
+try_identify_class(dataExp1user1,labels,1)
+
 
 %%
-
 %3.3
 function[num_steps] = calculate_steps(freqs)
     
@@ -394,6 +402,122 @@ function[num_steps] = calculate_steps(freqs)
     %Número de passos por minuto é 60 (segundos) a dividir pelo Período,
     %isto é, o tempo de 1 ciclo completo. 60/ (1/freq)
     num_steps = 60/(1/mean(freqs_relevantes));
+
+end
+
+%3.4
+function [] = try_identify_class(file, labels, experience)
+    
+    act = labels(:, labels(1,:) == experience);
+    
+    nr_real_estaticas = 0;
+    nr_real_dinamicas= 0;
+    nr_real_transicao= 0;
+
+    nr_prev_estaticas = 0;
+    nr_prev_dinamicas= 0;
+    nr_prev_transicao= 0;
+
+    for i = 1:length(act)
+        %loop por todas as atividades do desta experiencia
+        correct_activity = act(3,i);
+        activity_size = act(5,i) - act(4,i);
+
+        %atualizar o nr real da atividade
+        if correct_activity <= 3
+            nr_real_dinamicas = nr_real_dinamicas + 1;
+        elseif correct_activity <= 6
+            nr_real_estaticas= nr_real_estaticas+ 1;
+        else
+            nr_real_transicao= nr_real_transicao+ 1;
+        end
+
+        %prever
+        %calculate dft and get frequencies
+        [x,y,z] = DFT_activity(file,[act(4,i) act(5,i)],0,0,0,0);
+        
+        med_x = mean(x);
+        med_y = mean(y);
+        med_z = mean(z);
+
+        if med_x > 1.4
+            %dinamica ou estatica
+            
+            if med_x > 2.4
+                %Standing - Estatica
+                nr_prev_estaticas = nr_prev_estaticas + 1; 
+            else
+                %alguma dinamica
+                nr_prev_dinamicas = nr_prev_dinamicas + 1;
+            end
+     
+
+        elseif med_y > 1.7
+            %Laying - Estatica
+            nr_prev_estaticas = nr_prev_estaticas + 1; 
+
+        else
+            % frequencia x pequena, frequencia em y pequena
+            % pode ser estatica ou de transicao
+            % vamos comparar através do tamanho da atividade
+
+            if activity_size < 500
+                %transicao, atividade rápida
+                nr_prev_transicao = nr_prev_transicao + 1;
+
+            else
+                %estatica
+                nr_prev_estaticas = nr_prev_estaticas + 1; 
+            end
+
+        end
+    end
+        
+    %averiguar sensibilidade e especificidade
+    nr_falsos_negativos = 0;
+    nr_falsos_positivos = 0;
+
+    test = nr_real_dinamicas - nr_prev_dinamicas;
+
+    if test > 0
+        nr_falsos_positivos = nr_falsos_positivos + test; 
+
+    else
+        nr_falsos_positivos = nr_falsos_negativos + abs(test);
+
+    end
+
+    disp(nr_real_dinamicas);
+    disp(nr_prev_dinamicas);
+
+    test = nr_real_dinamicas - nr_prev_dinamicas;
+
+    if test > 0
+        nr_falsos_positivos = nr_falsos_positivos + test; 
+
+    else
+        nr_falsos_positivos = nr_falsos_negativos + abs(test);
+
+    end
+    disp(nr_real_estaticas);
+    disp(nr_prev_estaticas);
+
+    test = nr_real_dinamicas - nr_prev_dinamicas;
+
+    if test > 0
+        nr_falsos_positivos = nr_falsos_positivos + test; 
+
+    else
+        nr_falsos_positivos = nr_falsos_negativos + abs(test);
+
+    end
+
+    disp(nr_real_transicao);
+    disp(nr_prev_transicao);
+
+    sensivity = (nr_real_transicao + nr_real_dinamicas + nr_real_estaticas) / ( (nr_real_transicao + nr_real_dinamicas + nr_real_estaticas) + nr_falsos_negativos)
+
+    specificity = (nr_real_transicao + nr_real_dinamicas + nr_real_estaticas) / ( (nr_real_transicao + nr_real_dinamicas + nr_real_estaticas) + nr_falsos_positivos)
 
 end
 
