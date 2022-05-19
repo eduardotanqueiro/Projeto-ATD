@@ -380,11 +380,17 @@ num_steps_walkDown = calculate_steps(x_walkDown)
 %act = labels( 4:5, labels(3,:) >= 6);
 %med_transicao = abs( sum(act(2,:)) - sum(act(1,:)) ) / length(act);
 
-
 try_identify_class(dataExp1user1,labels,1)
 
 
 %%
+%3.5
+[t1,t2] = try_identify(dataExp1user1,labels,1)
+
+%%
+%FUNCTIONS
+
+
 %3.3
 function[num_steps] = calculate_steps(freqs)
     
@@ -474,127 +480,156 @@ function [] = try_identify_class(file, labels, experience)
     end
         
     %averiguar sensibilidade e especificidade
+    nr_verdadeiros_positivos = 0;
     nr_falsos_negativos = 0;
     nr_falsos_positivos = 0;
 
     test = nr_real_dinamicas - nr_prev_dinamicas;
 
     if test > 0
-        nr_falsos_positivos = nr_falsos_positivos + test; 
+        nr_falsos_negativos = nr_falsos_negativos + test;
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_prev_dinamicas;
 
     else
-        nr_falsos_positivos = nr_falsos_negativos + abs(test);
-
+        nr_falsos_positivos = nr_falsos_positivos + abs(test); 
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_real_dinamicas;
     end
 
-    disp(nr_real_dinamicas);
-    disp(nr_prev_dinamicas);
-
-    test = nr_real_dinamicas - nr_prev_dinamicas;
+    %disp(nr_real_dinamicas);
+    %disp(nr_prev_dinamicas);
+    
+    test = nr_real_estaticas - nr_prev_estaticas;
 
     if test > 0
-        nr_falsos_positivos = nr_falsos_positivos + test; 
+        nr_falsos_negativos = nr_falsos_negativos + test;
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_prev_estaticas;
 
     else
-        nr_falsos_positivos = nr_falsos_negativos + abs(test);
-
+        nr_falsos_positivos = nr_falsos_positivos + abs(test); 
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_real_estaticas;
     end
-    disp(nr_real_estaticas);
-    disp(nr_prev_estaticas);
+    %disp(nr_real_estaticas);
+    %disp(nr_prev_estaticas);
 
-    test = nr_real_dinamicas - nr_prev_dinamicas;
-
+    test = nr_real_transicao - nr_prev_transicao;
+    
     if test > 0
-        nr_falsos_positivos = nr_falsos_positivos + test; 
+        nr_falsos_negativos = nr_falsos_negativos + test;
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_prev_transicao;
 
     else
-        nr_falsos_positivos = nr_falsos_negativos + abs(test);
-
+        nr_falsos_positivos = nr_falsos_positivos + abs(test); 
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_real_transicao;
     end
 
-    disp(nr_real_transicao);
-    disp(nr_prev_transicao);
+    %disp(nr_real_transicao);
+    %disp(nr_prev_transicao);
+    
+    %nr_verdadeiros_negativos = length(act) - nr_falsos_positivos; %????
 
-    sensivity = (nr_real_transicao + nr_real_dinamicas + nr_real_estaticas) / ( (nr_real_transicao + nr_real_dinamicas + nr_real_estaticas) + nr_falsos_negativos)
+    sensivity =  nr_verdadeiros_positivos / ( nr_verdadeiros_positivos + nr_falsos_negativos)
 
-    specificity = (nr_real_transicao + nr_real_dinamicas + nr_real_estaticas) / ( (nr_real_transicao + nr_real_dinamicas + nr_real_estaticas) + nr_falsos_positivos)
+    %specificity = nr_verdadeiros_negativos / (nr_verdadeiros_negativos + nr_falsos_positivos)
 
 end
 
 %3.5
-function[num_verified, num_not_identified] = try_identify(file,times,ativity_freqs_ranges)
+function[class,med_x,med_y,med_z] = get_class(file, times)
+
+    activity_size = times(2) - times(1);
+
+
+    %prever
+    %calculate dft and get frequencies
+    [x,y,z] = DFT_activity(file,[times(1) times(2)],0,0,0,0);
     
-    %a - numero de vezes que a atividade aparece neste ficheiro
-    [a b] = size(times);
+    med_x = mean(x);
+    med_y = mean(y);
+    med_z = mean(z);
 
-    %if activity only appears once in the file
-    if a == 1
-        flag_line = 1;
-    else
-        flag_line = 0;
-    end
-
-    num_verified = 0;
-    num_not_identified = a;
-
-    for i = 1:length(times)
+    if med_x > 1.4
+        %dinamica ou estatica
         
-        
-        if flag_line == 1
-            dft_x = fftshift( fft( file(times(1):times(2) ,1) ) ) ;
-            dft_y = fftshift( fft( file(times(1):times(2) ,2) ) ) ;
-            dft_z = fftshift( fft( file(times(1):times(2) ,3) ) ) ;
+        if med_x > 2.4
+            %Standing - Estatica
+            class = "standing"; 
         else
-            dft_x = fftshift( fft( file(times(i,1):times(i,2) ,1) ) ) ;
-            dft_y = fftshift( fft( file(times(i,1):times(i,2) ,2) ) ) ;
-            dft_z = fftshift( fft( file(times(i,1):times(i,2) ,3) ) ) ;
+            %alguma dinamica
+            class = "dinamica";
+        end
+ 
+
+    elseif med_y > 1.7
+        %Laying - Estatica
+        class = "laying";
+
+    else
+        % frequencia x pequena, frequencia em y pequena
+        % pode ser estatica ou de transicao
+        % vamos comparar através do tamanho da atividade
+
+        if activity_size < 500
+            %transicao, atividade rápida
+            class = "transicao";
+
+        else
+            %estatica
+            class = "estatica";
         end
 
-        N = length(dft_x);
-        fq = [-fs/2:fs/N:fs/2-fs/N];
-
-        %get positive values
-        m_x = abs(dft_x)/N;
-        m_y = abs(dft_y)/N;
-        m_z = abs(dft_z)/N;
-        
-
-        %clean
-        m_x( m_x<0.001)=0;
-        m_y( m_y<0.001)=0;
-        m_z( m_z<0.001 )=0;
-        
-        m_x( abs(fq) <0.15) = 0;
-        m_y( abs(fq) <0.15) = 0;
-        m_z( abs(fq) <0.15) = 0;
-
-        threshold_x = 0.8*max(m_x);
-        threshold_y = 0.8*max(m_y);
-        threshold_z = 0.8*max(m_z);
+    end
+    
 
 
-        %find relevant frequencies for each axis
-        %X
-        [pks,locs] = findpeaks(m_x,'MinPeakHeight',threshold_x);
-        f_relevant_x = fq(locs);
-        x = [x,f_relevant_x( f_relevant_x>0 )];
-        
-        %Y
-        [pks,locs] = findpeaks(m_y,'MinPeakHeight',threshold_y);
-        f_relevant_y = fq(locs);
-        y = [y,f_relevant_y( f_relevant_y>0 )]; 
+end
 
-        %Z
-        [pks,locs] = findpeaks(m_z,'MinPeakHeight',threshold_z);
-        f_relevant_z = fq(locs);
-        z = [z,f_relevant_z( f_relevant_z>0 )];
+%3.5
+function[nr_real_activities,nr_prev_activities] = try_identify(file,labels,experience)
+    
 
-        %TODO
-        %CHECKAR SE ESTES VALORES ESTÃO ENTRE OS INTERVALOS ESTABELECIDOS
-        %NO 3.2
+    act = labels(:, labels(1,:) == experience);
+    nr_real_activities = [0 0 0 0 0 0 0 0 0 0 0 0];
+    nr_prev_activities = [0 0 0 0 0 0 0 0 0 0 0 0];
+
+    for i = 1:length(act)
+        %loop por todas as atividades do desta experiencia
+        correct_activity = act(3,i);
+        activity_size = act(5,i) - act(4,i);
+        intervalo = [act(4,i) act(5,i)];
+
+        %atualizar o nr real da atividade
+        nr_real_activities(correct_activity) = nr_real_activities(correct_activity) + 1; 
+
+        %prever
+        %calculate dft and get frequencies
+        %PREVER ATIVIDADE
+        [prever_classe,med_x,med_y,med_z] = get_class(file,intervalo);
+
+        %README - ISTO NÃO ESTÁ COMPLETO E NÃO ESTÁ A FUNCIONAR MUITO BEM
+        if prever_classe == "standing"
+            nr_prev_activities(5) = nr_prev_activities(5) + 1;
+
+        elseif prever_classe == "laying"
+            nr_prev_activities(6) = nr_prev_activities(6) + 1; 
+
+        elseif prever_classe == "dinamica"
+           %TODO VERIFICAR QUAL DAS DINAMICAS É
+
+        elseif prever_classe == "estatica"
+            %nas estaticas só sobre sitting
+            nr_prev_activities(4) = nr_prev_activities(4) + 1; 
+
+        elseif prever_classe == "transicao"
+                %TODO VERIFICAR QUAL DAS TRANSICAO É
+
+        end
 
         
     end
+
+
+
+
 
 end
 
