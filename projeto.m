@@ -143,7 +143,7 @@ lie_to_stand_Exp8_Us4 = get_activity_file(8,4,12,labels);
 %%
 %2
 % Print Signal With labels on plot
-print_with_labels(dataExp5user3,labels,activityLabels,5);
+print_with_labels(dataExp1user1,labels,activityLabels,1);
 
 %%
 %3
@@ -176,7 +176,7 @@ x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 
 disp("Walk")
-[x_walk,y_walk,z_walk] = get_freqs_filtered(x,y,z)
+[x_walk,y_walk,z_walk,med_x_walk,med_t_walk,med_z_walk] = get_freqs_filtered(x,y,z)
 
 
 %walk upwards
@@ -202,31 +202,32 @@ x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 
 disp("Walk up Freqs")
-[x_walkUp,y_walkUp,z_walkUp] = get_freqs_filtered(x,y,z)
+[x_walkUp,y_walkUp,z_walkUp,med_x_walkUp,med_t_walkUp,med_z_walkUp] = get_freqs_filtered(x,y,z)
 
 %walk down
 x = [];
 y = [];
 z = [];
 
-[auxx,auxy,auxz] = DFT_activity(dataExp1user1,walkDown_Exp1_Us1,activityLabels,2,0,0);
+[auxx,auxy,auxz] = DFT_activity(dataExp1user1,walkDown_Exp1_Us1,activityLabels,3,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
-[auxx,auxy,auxz] = DFT_activity(dataExp2user1,walkDown_Exp2_Us1,activityLabels,2,0,0);
+[auxx,auxy,auxz] = DFT_activity(dataExp2user1,walkDown_Exp2_Us1,activityLabels,3,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
-[auxx,auxy,auxz] = DFT_activity(dataExp3user2,walkDown_Exp3_Us2,activityLabels,2,0,0);
+[auxx,auxy,auxz] = DFT_activity(dataExp3user2,walkDown_Exp3_Us2,activityLabels,3,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
-[auxx,auxy,auxz] = DFT_activity(dataExp4user2,walkDown_Exp4_Us2,activityLabels,2,0,0);
+[auxx,auxy,auxz] = DFT_activity(dataExp4user2,walkDown_Exp4_Us2,activityLabels,3,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
-[auxx,auxy,auxz] = DFT_activity(dataExp5user3,walkDown_Exp5_Us3,activityLabels,2,0,0);
+[auxx,auxy,auxz] = DFT_activity(dataExp5user3,walkDown_Exp5_Us3,activityLabels,3,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
-[auxx,auxy,auxz] = DFT_activity(dataExp6user3,walkDown_Exp6_Us3,activityLabels,2,0,0);
+[auxx,auxy,auxz] = DFT_activity(dataExp6user3,walkDown_Exp6_Us3,activityLabels,3,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
-[auxx,auxy,auxz] = DFT_activity(dataExp7user4,walkDown_Exp7_Us4,activityLabels,2,0,0);
+[auxx,auxy,auxz] = DFT_activity(dataExp7user4,walkDown_Exp7_Us4,activityLabels,3,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
-[auxx,auxy,auxz] = DFT_activity(dataExp8user4,walkDown_Exp8_Us4,activityLabels,2,0,0);
+[auxx,auxy,auxz] = DFT_activity(dataExp8user4,walkDown_Exp8_Us4,activityLabels,3,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
+
 disp("Walk Down Freqs")
-[x_walkDown,y_walkDown,z_walkDown] = get_freqs_filtered(x,y,z)
+[x_walkDown,y_walkDown,z_walkDown,med_x_walkDown,med_t_walkDown,med_z_walkDown] = get_freqs_filtered(x,y,z)
 
 
 %Sit
@@ -248,9 +249,10 @@ x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp7user4,sit_Exp7_Us4,activityLabels,4,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp8user4,sit_Exp8_Us4,activityLabels,4,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 
 disp("Sit Freqs")
-[x_sit,y_sit,z_sit] = get_freqs_filtered(x,y,z)
+[x_sit,y_sit,z_sit,med_x_sit,med_t_sit,med_z_sit] = get_freqs_filtered(x,y,z)
 
 %Stand
 x = [];
@@ -271,16 +273,17 @@ x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp7user4,stand_Exp7_Us4,activityLabels,5,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp8user4,stand_Exp8_Us4,activityLabels,5,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 
 disp("Stand Freqs")
-[x_stand,y_stand,z_stand] = get_freqs_filtered(x,y,z)
+[x_stand,y_stand,z_stand,med_x_stand,med_t_stand,med_z_stand] = get_freqs_filtered(x,y,z)
 
 
 %Lay
 x = [];
 y = [];
 z = [];
-[auxx,auxy,auxz] = DFT_activity(dataExp1user1,lay_Exp1_Us1,activityLabels,6,0,0);
+[auxx,auxy,auxz] = DFT_activity(dataExp1user1,lay_Exp1_Us1,activityLabels,6,1,1);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp2user1,lay_Exp2_Us1,activityLabels,6,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
@@ -295,9 +298,11 @@ x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp7user4,lay_Exp7_Us4,activityLabels,6,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp8user4,lay_Exp8_Us4,activityLabels,6,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 
 disp("Lay Freqs")
-[x_lay,y_lay,z_lay] = get_freqs_filtered(x,y,z)
+[x_lay,y_lay,z_lay,med_x_lay,med_t_lay,med_z_lay] = get_freqs_filtered(x,y,z)
+
 
 %Stand to sit
 x = [];
@@ -318,9 +323,10 @@ x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp7user4,stand_to_sit_Exp7_Us4,activityLabels,7,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp8user4,stand_to_sit_Exp8_Us4,activityLabels,7,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 
 disp("Stand to sit Freqs")
-[x_stand_to_sit,y_stand_to_sit,z_stand_to_sit] = get_freqs_filtered(x,y,z)
+[x_stand_to_sit,y_stand_to_sit,z_stand_to_sit,med_x_stand_to_sit,med_t_stand_to_sit,med_z_stand_to_sit] = get_freqs_filtered(x,y,z)
 
 %Sit to stand
 x = [];
@@ -341,9 +347,10 @@ x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp7user4,sit_to_stand_Exp7_Us4,activityLabels,8,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp8user4,sit_to_stand_Exp8_Us4,activityLabels,8,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 
 disp("Sit to stand Freqs")
-[x_sit_to_stand,y_sit_to_stand,z_sit_to_stand] = get_freqs_filtered(x,y,z)
+[x_sit_to_stand,y_sit_to_stand,z_sit_to_stand,med_x_sit_to_stand,med_t_sit_to_stand,med_z_sit_to_stand] = get_freqs_filtered(x,y,z)
 
 %Sit to lie
 x = [];
@@ -364,9 +371,10 @@ x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp7user4,sit_to_lie_Exp7_Us4,activityLabels,9,0,0);
 x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 [auxx,auxy,auxz] = DFT_activity(dataExp8user4,sit_to_lie_Exp8_Us4,activityLabels,9,0,0);
+x = [x,auxx];y =[y,auxy];z =[ z,auxz];
 
 disp("Sit to lie Freqs")
-[x_sit_to_lie,y_sit_to_lie,z_sit_to_lie] = get_freqs_filtered(x,y,z)
+[x_sit_to_lie,y_sit_to_lie,z_sit_to_lie,med_x_sit_to_lie,med_t_sit_to_lie,med_z_sit_to_lie] = get_freqs_filtered(x,y,z)
 %%
 %3.3
 %Calcular passos para ativdadas dinâmicas
@@ -380,12 +388,12 @@ num_steps_walkDown = calculate_steps(x_walkDown)
 %act = labels( 4:5, labels(3,:) >= 6);
 %med_transicao = abs( sum(act(2,:)) - sum(act(1,:)) ) / length(act);
 
-try_identify_class(dataExp1user1,labels,1)
+try_identify_class(dataExp3user2,labels,3);
 
 
 %%
 %3.5
-[t1,t2] = try_identify(dataExp1user1,labels,1)
+[t1,t2] = try_identify(dataExp7user4,labels,7)
 
 %%
 %FUNCTIONS
@@ -440,45 +448,18 @@ function [] = try_identify_class(file, labels, experience)
 
         %prever
         %calculate dft and get frequencies
-        [x,y,z] = DFT_activity(file,[act(4,i) act(5,i)],0,0,0,0);
-        
-        med_x = mean(x);
-        med_y = mean(y);
-        med_z = mean(z);
+        [c] = get_class(file,[act(4,i) act(5,i)]);
 
-        if med_x > 1.4
-            %dinamica ou estatica
-            
-            if med_x > 2.4
-                %Standing - Estatica
-                nr_prev_estaticas = nr_prev_estaticas + 1; 
-            else
-                %alguma dinamica
-                nr_prev_dinamicas = nr_prev_dinamicas + 1;
-            end
-     
-
-        elseif med_y > 1.7
-            %Laying - Estatica
-            nr_prev_estaticas = nr_prev_estaticas + 1; 
-
-        else
-            % frequencia x pequena, frequencia em y pequena
-            % pode ser estatica ou de transicao
-            % vamos comparar através do tamanho da atividade
-
-            if activity_size < 500
-                %transicao, atividade rápida
-                nr_prev_transicao = nr_prev_transicao + 1;
-
-            else
-                %estatica
-                nr_prev_estaticas = nr_prev_estaticas + 1; 
-            end
-
+        if c == "estatica" | c == "laying"
+            nr_prev_estaticas = nr_prev_estaticas + 1 ;
+        elseif c == "dinamica"  
+            nr_prev_dinamicas = nr_prev_dinamicas + 1;
+        elseif c == "transicao"
+            nr_prev_transicao = nr_prev_transicao + 1;
         end
+
     end
-        
+     
     %averiguar sensibilidade e especificidade
     nr_verdadeiros_positivos = 0;
     nr_falsos_negativos = 0;
@@ -508,6 +489,7 @@ function [] = try_identify_class(file, labels, experience)
         nr_falsos_positivos = nr_falsos_positivos + abs(test); 
         nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_real_estaticas;
     end
+
     %disp(nr_real_estaticas);
     %disp(nr_prev_estaticas);
 
@@ -541,7 +523,8 @@ function[class,med_x,med_y,med_z] = get_class(file, times)
 
     %prever
     %calculate dft and get frequencies
-    [x,y,z] = DFT_activity(file,[times(1) times(2)],0,0,0,0);
+    intervalo = [times(1) times(2)];
+    [x,y,z] = DFT_activity(file,intervalo,0,0,0,0);
     
     med_x = mean(x);
     med_y = mean(y);
@@ -550,16 +533,17 @@ function[class,med_x,med_y,med_z] = get_class(file, times)
     if med_x > 1.4
         %dinamica ou estatica
         
-        if med_x > 2.4
-            %Standing - Estatica
-            class = "standing"; 
+        if med_x > 2
+            %Estatica - Standing ou Sit
+            class = "estatica"; 
+
         else
             %alguma dinamica
             class = "dinamica";
         end
  
 
-    elseif med_y > 1.7
+    elseif med_y > 1.3
         %Laying - Estatica
         class = "laying";
 
@@ -568,12 +552,12 @@ function[class,med_x,med_y,med_z] = get_class(file, times)
         % pode ser estatica ou de transicao
         % vamos comparar através do tamanho da atividade
 
-        if activity_size < 500
+        if activity_size < 550
             %transicao, atividade rápida
             class = "transicao";
 
         else
-            %estatica
+            %estatica - sit
             class = "estatica";
         end
 
@@ -605,23 +589,72 @@ function[nr_real_activities,nr_prev_activities] = try_identify(file,labels,exper
         %PREVER ATIVIDADE
         [prever_classe,med_x,med_y,med_z] = get_class(file,intervalo);
 
+
         %README - ISTO NÃO ESTÁ COMPLETO E NÃO ESTÁ A FUNCIONAR MUITO BEM
-        if prever_classe == "standing"
-            nr_prev_activities(5) = nr_prev_activities(5) + 1;
-
-        elseif prever_classe == "laying"
+        if prever_classe == "laying"
             nr_prev_activities(6) = nr_prev_activities(6) + 1; 
-
+        
         elseif prever_classe == "dinamica"
-           %TODO VERIFICAR QUAL DAS DINAMICAS É
+           %VERIFICAR QUAL DAS DINAMICAS É
+           %nr_prev_activities(2) = nr_prev_activities(2) + 1;
+            disp(med_y)
+            dif_walk = abs(1.74-med_y);
+            dif_walkUp = abs(1.49-med_y);
+            dif_walkDown = abs(1.64-med_y);
+            
+            if med_y > 1.82
+                %Walking down
+                nr_prev_activities(3) = nr_prev_activities(3) + 1;
+            
+            elseif  dif_walkUp < dif_walk & dif_walkUp < dif_walkDown
+                %Walking Up
+                nr_prev_activities(2) = nr_prev_activities(2) + 1; 
+            
+            elseif dif_walk < dif_walkDown & dif_walk < dif_walkUp
+                %Walking
+                nr_prev_activities(1) = nr_prev_activities(1) + 1; 
+
+            else
+                %Walk Down
+                nr_prev_activities(3) = nr_prev_activities(3) + 1;
+    
+            end
+
 
         elseif prever_classe == "estatica"
-            %nas estaticas só sobre sitting
-            nr_prev_activities(4) = nr_prev_activities(4) + 1; 
+            %nas estaticas só sobra sitting e standing
+            %amplitude baixa
+
+            %nr_prev_activities(5) = nr_prev_activities(5) + 1;
+            dif_sit = abs(4.2551 - med_x);
+            dif_stand = abs(3.9268 - med_x);
+
+            if med_x < 2.30
+                %tem de ser sitting, no standing nunca temos frequencias
+                %abaixo de 2.38
+                nr_prev_activities(4) = nr_prev_activities(4) + 1;
+
+            elseif med_x > 5.5
+                %tem de ser sitting, no standing nunca temos frequencias
+                %acima de 5.39
+                nr_prev_activities(4) = nr_prev_activities(4) + 1;
+            
+            elseif dif_sit < dif_stand
+                %se está no intervalo comum às duas atividades, vamos pelo
+                %que está mais perto da média
+                %neste caso, mais perto da media do sitting
+
+                nr_prev_activities(4) = nr_prev_activities(4) + 1;
+
+            else
+                %standing
+                nr_prev_activities(5) = nr_prev_activities(5) + 1;
+
+            end
 
         elseif prever_classe == "transicao"
                 %TODO VERIFICAR QUAL DAS TRANSICAO É
-
+                nr_prev_activities(7) = nr_prev_activities(7) + 1;
         end
 
         
@@ -630,21 +663,24 @@ function[nr_real_activities,nr_prev_activities] = try_identify(file,labels,exper
 
 
 
-
 end
 
 %3.2
-function[xf,yf,zf] = get_freqs_filtered(x,y,z)
+function[xf,yf,zf,med_x,med_y,med_z] = get_freqs_filtered(x,y,z)
         
     xf = [];
     yf = [];
     zf = [];
     step = 2;
-    
+
+    med_x = mean(x);
+    med_y = mean(y);
+    med_z = mean(z);
+
     %X
     for k = 0:step:max(x)
         
-        intervalo = x( x>k &x <k+step );
+        intervalo = x( x>=k &x <k+step );
 
         desvio_pad = std(intervalo);
         med = mean( intervalo );
@@ -653,6 +689,7 @@ function[xf,yf,zf] = get_freqs_filtered(x,y,z)
         xf = [xf;[med-desvio_pad,med+desvio_pad,nr_elem]];
     end
     
+
     %filter the frequencias by the groups that have the most  values
     %criar intervalo com base na media e no desvio padrao
     %meter a 0 caso o limite inferior seja inferior a 0
@@ -663,7 +700,7 @@ function[xf,yf,zf] = get_freqs_filtered(x,y,z)
     %Y
     for k = 0:step:max(y)
         
-        intervalo = y( y>k & y <k+step );
+        intervalo = y( y>=k & y <k+step );
 
         desvio_pad = std(intervalo);
         med = mean( intervalo );
@@ -679,7 +716,7 @@ function[xf,yf,zf] = get_freqs_filtered(x,y,z)
     %Z
     for k = 0:step:max(z)
         
-        intervalo = z( z>k & z <k+step );
+        intervalo = z( z>=k & z <k+step );
 
         desvio_pad = std(intervalo);
         med = mean( intervalo );
@@ -702,6 +739,9 @@ function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude
     x = [];
     y = [];
     z = [];
+    Cm_x = [];
+    Cm_y = [];
+    Cm_z = [];
     
     [a b] = size(times);
     
@@ -713,7 +753,7 @@ function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude
     end
 
 
-    for i = 1:length(times)
+    for i = 1:a
         
         
         if flag_line == 1
@@ -730,12 +770,10 @@ function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude
         fq = [-fs/2:fs/N:fs/2-fs/N];
 
         %get positive values
-        m_x = abs(dft_x)/N;
-        m_y = abs(dft_y)/N;
-        m_z = abs(dft_z)/N;
+        m_x = abs(dft_x);
+        m_y = abs(dft_y);
+        m_z = abs(dft_z);
         
-
-
         %clean
         m_x( m_x<0.001)=0;
         m_y( m_y<0.001)=0;
@@ -744,6 +782,12 @@ function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude
         m_x( abs(fq) <0.15) = 0;
         m_y( abs(fq) <0.15) = 0;
         m_z( abs(fq) <0.15) = 0;
+        
+        %Later use on activities identification
+        Cm_x = [Cm_x (m_x/N)'];
+        Cm_y = [Cm_y (m_y/N)'];
+        Cm_z = [Cm_z (m_z/N)'];
+
 
         threshold_x = 0.8*max(m_x);
         threshold_y = 0.8*max(m_y);
@@ -778,11 +822,10 @@ function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude
             title('|DFT| do sinal eixo Z'); 
             ylabel('Magnitude = |X|');
             xlabel('f [Hz]');
-
+            
         end
 
         %find relevant frequencies for each axis
-        %erro algures aqui
         %X
         [pks,locs] = findpeaks(m_x,'MinPeakHeight',threshold_x);
         f_relevant_x = fq(locs);
@@ -826,6 +869,7 @@ function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude
             end
             %m_z_zeros( m_z_zeros < threshold_z) = 0;
 
+
             %plot relevant freqs
             nexttile;
             hold on;
@@ -847,6 +891,7 @@ function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude
             title('Frequencias relevantes do sinal eixo Z'); 
             ylabel('Magnitude = |X|');
             xlabel('f [Hz]');
+
         end
 
     end
