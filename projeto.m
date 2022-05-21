@@ -1,5 +1,5 @@
 %Eduardo Carneiro 2020240332
-%David
+%David Silva 
 
 %1
 %Reading data from files and storing it in matrixes
@@ -143,7 +143,7 @@ lie_to_stand_Exp8_Us4 = get_activity_file(8,4,12,labels);
 %%
 %2
 % Print Signal With labels on plot
-print_with_labels(dataExp1user1,labels,activityLabels,1);
+print_with_labels(dataExp5user3,labels,activityLabels,5);
 
 %%
 %3
@@ -388,16 +388,50 @@ num_steps_walkDown = calculate_steps(x_walkDown)
 %act = labels( 4:5, labels(3,:) >= 6);
 %med_transicao = abs( sum(act(2,:)) - sum(act(1,:)) ) / length(act);
 
-try_identify_class(dataExp3user2,labels,3);
+try_identify_class(dataExp5user3,labels,5,1);
 
 
 %%
 %3.5
 [t1,t2] = try_identify(dataExp7user4,labels,7)
 
+
+%%
+%4
+%4.1
+%ficheiro escolhido: user1 experiencia 2
+test_windows_dft(dataExp2User1,labels,2)
+
 %%
 %FUNCTIONS
 
+%4.1
+
+function [] = test_windows_dft(file,labels,experience)
+    fs = 50; %Hz
+    frame_size = 1; %em segundos
+    N = length(file);
+    tam = fs * frame_size;
+    passo = tam;
+
+    %windows 
+    hamming = hamming(tam);
+    hanning = hanning(tam);
+    blackman = blackman(tam);
+    
+    if ( mod(tam,2) == 0 )
+        f_frame=-fs/2:fs/tam:fs/2-fs/tam;
+    else
+        f_frame=-fs/2+fs(2*tam):fs/tam:fs/2+fs/(2*tam);
+    end
+
+    for i = 1:tam:N-passo
+            
+        
+
+
+    end
+end
 
 %3.3
 function[num_steps] = calculate_steps(freqs)
@@ -420,7 +454,14 @@ function[num_steps] = calculate_steps(freqs)
 end
 
 %3.4
-function [] = try_identify_class(file, labels, experience)
+function [] = try_identify_class(file, labels, experience, plotit)
+    
+    %plot do ficheiro no eixo x
+    if plotit
+        plot([1:length(file)],file(:,1))
+        hold on;
+        colors = ['r' 'c' 'm'];
+    end
     
     act = labels(:, labels(1,:) == experience);
     
@@ -451,13 +492,29 @@ function [] = try_identify_class(file, labels, experience)
         [c] = get_class(file,[act(4,i) act(5,i)]);
 
         if c == "estatica" | c == "laying"
+            %estatica
             nr_prev_estaticas = nr_prev_estaticas + 1 ;
-        elseif c == "dinamica"  
-            nr_prev_dinamicas = nr_prev_dinamicas + 1;
-        elseif c == "transicao"
-            nr_prev_transicao = nr_prev_transicao + 1;
-        end
+            
+            if plotit
+                plot([act(4,i):act(5,i)], file( act(4,i):act(5,i) , 1), colors(1) );
+            end
 
+        elseif c == "dinamica"
+            %dinamica
+            nr_prev_dinamicas = nr_prev_dinamicas + 1;
+
+            if plotit
+                plot([act(4,i):act(5,i)], file( act(4,i):act(5,i) , 1), colors(2) );
+            end
+
+        elseif c == "transicao"
+            %transicao
+            nr_prev_transicao = nr_prev_transicao + 1;
+            if plotit
+                plot([act(4,i):act(5,i)], file( act(4,i):act(5,i) , 1), colors(3) );
+            end
+
+        end
     end
      
     %averiguar sensibilidade e especificidade
