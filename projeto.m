@@ -901,7 +901,8 @@ end
 
 function [] = print_with_labels(file_data,labels,activityLabels,experiencia)
    
-      i = 1;
+    colors = [ [0.9 0.1 0.1] ; [0.8500 0.3250 0.0980] ; [0.9290 0.6940 0.1250] ;[0.4940 0.1840 0.5560] ;[0.4660 0.6740 0.1880] ;[0.3010 0.7450 0.9330] ;[0.6350 0.0780 0.1840]; [0.1 0.9 0.9] ;[0.35 0.15 0.8]; [0.50 0.324 0.124] ;[0 0.3 0.7] ;[0.9 0 0.5] ];
+    i = 1;
     j = i;
     x_vals = [];
     activity = {};
@@ -910,40 +911,83 @@ function [] = print_with_labels(file_data,labels,activityLabels,experiencia)
     while(labels(1,i) ~= experiencia)
         i = i+1;
     end
-
-    while (labels(1,i) == experiencia)
-        x_vals = [ x_vals, labels(4,i)];
-        activity{j} = activityLabels{2}{labels(3,i)};
-        
-        i = i+1;
-        j = j+1;
-    end
-    
+    j = i;
 
     %X
     nexttile
     plot([1:length(file_data)],file_data(:,1))
+    hold on
     title("X")
+    min_y = min(file_data(:,1));
+    max_y = max(file_data(:,1));
 
-      xticks(x_vals);
-    xticklabels(activity)
+    while (labels(1,j) == experiencia)
+
+        if mod(j,2) == 0
+            l = text( labels(4,j) , min_y , activityLabels{2}{labels(3,j)} );
+        else
+            l = text( labels(4,j) , max_y, activityLabels{2}{labels(3,j)} );
+        end
+        set(l,'Rotation',50);
+
+        hold on
+
+        plot( [labels(4,j):labels(5,j)]  , file_data( labels(4,j):labels(5,j) , 1) , 'Color',  colors( labels(3,j),: ) )
+        
+        j = j+1;
+    end
+    j = i;
 
     
     %Y
     nexttile
     plot([1:length(file_data)],file_data(:,2))
     title("Y")
+    min_y = min(file_data(:,2));
+    max_y = max(file_data(:,2));
 
-    xticks(x_vals);
-    xticklabels(activity)
+    while (labels(1,j) == experiencia)
+
+        if mod(j,2) == 0
+            l = text( labels(4,j) , min_y , activityLabels{2}{labels(3,j)} );
+        else
+            l = text( labels(4,j) , max_y, activityLabels{2}{labels(3,j)} );
+        end
+        set(l,'Rotation',50);
+
+        hold on
+
+        plot( [labels(4,j):labels(5,j)]  , file_data( labels(4,j):labels(5,j) , 2) , 'Color',  colors( labels(3,j),: ) )
+        
+        j = j+1;
+    end
+    j = i;
+
     
     %Z
     nexttile
     plot([1:length(file_data)],file_data(:,3))
     title("Z")
-   
-    xticks(x_vals);
-    xticklabels(activity)
+
+    min_y = min(file_data(:,3));
+    max_y = max(file_data(:,3));
+
+    while (labels(1,j) == experiencia)
+
+        if mod(j,2) == 0
+            l = text( labels(4,j) , min_y , activityLabels{2}{labels(3,j)} );
+        else
+            l = text( labels(4,j) , max_y, activityLabels{2}{labels(3,j)} );
+        end
+        set(l,'Rotation',50);
+
+        hold on
+
+        plot( [labels(4,j):labels(5,j)]  , file_data( labels(4,j):labels(5,j) , 3) , 'Color',  colors( labels(3,j),: ) )
+        
+        j = j+1;
+    end
+    j = i;
 
 end
 
