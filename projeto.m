@@ -24,7 +24,6 @@ dataExp7user4 = fscanf(fileExp7user4,formatSpec,[3 Inf])';
 dataExp8user4 = fscanf(fileExp8user4,formatSpec,[3 Inf])';
 
 
-
 %Import Activity Labels
 fileLabels = fopen('labels.txt','r');
 fileActivityLabels = fopen('activity_labels.txt','r');
@@ -1050,7 +1049,6 @@ end
 
 
 function fin = get_activity_file(experience,user,activity,labels)
-         
     fin = [];
     i = 1;
 
