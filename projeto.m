@@ -399,21 +399,18 @@ try_identify_class(dataExp5user3,labels,5,1);
 %4
 %4.1
 %ficheiro escolhido: user1 experiencia 2
-%test_windows_stft(dataExp2user1,walk_Exp4_Us2,labels,2)
+test_windows_stft(dataExp2user1,walk_Exp2_Us1)
 
 %stft(dataExp2user1(:,1),50,'Window',kaiser(256,5))
-%[stft_x,stft_y,stft_z] = calculate_stft(dataExp2user1,50);
+
 
 %%
 %FUNCTIONS
 
 %4.2
+function [stft] = calculate_stft(segment,win_size)
 
-function [stft_x,stft_y,stft_z] = calculate_stft(segment,win_size)
-
-    stft_x = [];
-    stft_y = [];
-    stft_z = [];
+    stft = [];
 
     if ( mod(win_size,2) == 0 )
         f_frame=-50/2:50/win_size:50/2-50/win_size;
@@ -422,23 +419,21 @@ function [stft_x,stft_y,stft_z] = calculate_stft(segment,win_size)
     end
 
     for i = 1:length(file)-win_size
-        m_x = abs(fftshift(fft( segment( i:i+win_size-1 ,1) )));
-        m_y = abs(fftshift(fft( segment( i:i+win_size-1 ,2) )));
-        m_z = abs(fftshift(fft( segment( i:i+win_size-1 ,3) )));
+        mag_dft = abs(fftshift(fft( segment(i:i+win_size-1) )));
+
         
-        plot(f_frame,m_x)
+        plot(f_frame,mag_dft)
         hold on;
 
-        stft_x = [stft_x ; m_x];
-        stft_y = [stft_y ; m_y];
-        stft_z = [stft_z ; m_z];
+        stft = [ stft ; mag_dft];
+    
     end
 
 
 end
 
 %4.1
-function [] = test_windows_stft(file,times,labels,experience)
+function [] = test_windows_stft(file,times)
     fs = 50; %Hz
     frame_size = 1; %em segundos
     N = length(file);
@@ -557,6 +552,8 @@ function [] = try_identify_class(file, labels, experience, plotit)
     nr_prev_dinamicas= 0;
     nr_prev_transicao= 0;
 
+    nr_verdadeiros_negativos = 0;
+
     for i = 1:length(act)
         %loop por todas as atividades do desta experiencia
         correct_activity = act(3,i);
@@ -578,7 +575,11 @@ function [] = try_identify_class(file, labels, experience, plotit)
         if c == "estatica" | c == "laying"
             %estatica
             nr_prev_estaticas = nr_prev_estaticas + 1 ;
-            
+
+            if correct_activity > 3 & correct_activity < 6
+                nr_verdadeiros_negativos = nr_verdadeiros_negativos + 2;
+            end
+
             if plotit
                 plot([act(4,i):act(5,i)], file( act(4,i):act(5,i) , 1), colors(1) );
             end
@@ -587,6 +588,10 @@ function [] = try_identify_class(file, labels, experience, plotit)
             %dinamica
             nr_prev_dinamicas = nr_prev_dinamicas + 1;
 
+            if correct_activity <= 3
+                nr_verdadeiros_negativos = nr_verdadeiros_negativos + 2;
+            end
+
             if plotit
                 plot([act(4,i):act(5,i)], file( act(4,i):act(5,i) , 1), colors(2) );
             end
@@ -594,6 +599,11 @@ function [] = try_identify_class(file, labels, experience, plotit)
         elseif c == "transicao"
             %transicao
             nr_prev_transicao = nr_prev_transicao + 1;
+
+            if correct_activity > 6
+                nr_verdadeiros_negativos = nr_verdadeiros_negativos + 2;
+            end 
+
             if plotit
                 plot([act(4,i):act(5,i)], file( act(4,i):act(5,i) , 1), colors(3) );
             end
@@ -607,7 +617,6 @@ function [] = try_identify_class(file, labels, experience, plotit)
     nr_falsos_positivos = 0;
 
     test = nr_real_dinamicas - nr_prev_dinamicas;
-
     if test > 0
         nr_falsos_negativos = nr_falsos_negativos + test;
         nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_prev_dinamicas;
@@ -616,12 +625,9 @@ function [] = try_identify_class(file, labels, experience, plotit)
         nr_falsos_positivos = nr_falsos_positivos + abs(test); 
         nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_real_dinamicas;
     end
-
-    %disp(nr_real_dinamicas);
-    %disp(nr_prev_dinamicas);
     
-    test = nr_real_estaticas - nr_prev_estaticas;
 
+    test = nr_real_estaticas - nr_prev_estaticas;
     if test > 0
         nr_falsos_negativos = nr_falsos_negativos + test;
         nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_prev_estaticas;
@@ -631,11 +637,8 @@ function [] = try_identify_class(file, labels, experience, plotit)
         nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_real_estaticas;
     end
 
-    %disp(nr_real_estaticas);
-    %disp(nr_prev_estaticas);
 
-    test = nr_real_transicao - nr_prev_transicao;
-    
+    test = nr_real_transicao - nr_prev_transicao;    
     if test > 0
         nr_falsos_negativos = nr_falsos_negativos + test;
         nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_prev_transicao;
@@ -645,14 +648,9 @@ function [] = try_identify_class(file, labels, experience, plotit)
         nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_real_transicao;
     end
 
-    %disp(nr_real_transicao);
-    %disp(nr_prev_transicao);
-    
-    %nr_verdadeiros_negativos = length(act) - nr_falsos_positivos; %????
+    sensivity =  nr_verdadeiros_positivos / ( nr_verdadeiros_positivos + nr_falsos_negativos);
 
-    sensivity =  nr_verdadeiros_positivos / ( nr_verdadeiros_positivos + nr_falsos_negativos)
-
-    %specificity = nr_verdadeiros_negativos / (nr_verdadeiros_negativos + nr_falsos_positivos)
+    specificity = nr_verdadeiros_negativos / (nr_verdadeiros_negativos + nr_falsos_positivos);
 
 end
 
