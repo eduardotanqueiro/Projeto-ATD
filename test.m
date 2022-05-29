@@ -1,6 +1,10 @@
 formatSpec = '%f %f %f';
 %vai buscar a path da pasta
 files = dir(pwd);
+
+%%leitura de dados
+%guardamos as experiencias num dicionario em que a chave e o numero da
+%experiencia
 n_experiencia={};
 n_utilizador=[];
 
@@ -36,6 +40,7 @@ fileActivityLabels = fopen('activity_labels.txt','r');
 labels = fscanf(fileLabels,'%d %d %d %d %d',[5 Inf]);
 activityLabels = textscan(fileActivityLabels,'%d%s');
 
+%calcular os intervalos de tempo em que certa atividade se realizou
 activity_frame={};
 for h=1:12
     frames_activity={};
@@ -49,22 +54,19 @@ for h=1:12
     activity_frame=[activity_frame;containers.Map(h,frames_activity)];
 end
 
-%dados atividade 2 experiencia 3
+%frames dados atividade 2 experiencia 3
 %celldisp(activity_frame(2).values({3}))
 
 
 %%print all graphics
-
 for i=1:experiencias.Count
     figure('Name',sprintf("EXPERIENCIA %d ",i))
     print_with_labels(experiencias(i),labels,activityLabels,i);
 end
 
-
+%%freq_filtered
 freq_filtered={};
-
 for i=1:activity_frame.Count
-
     x=[];
     y=[];
     z=[];
@@ -83,149 +85,428 @@ for i=1:activity_frame.Count
 end
 
 %aceder ao xf da atividade 1
-%freq_filtered(1).values('xf');
+%freq_filtered(1).values({'xf}');
 
 
+%calcular passos atividades dinamicas (1,2,3)
+numero_passos=[];
+for i=1:3
+    numero_passos=[numero_passos calculate_steps(cell2mat(freq_filtered(i).values({'xf'})))];
+end
+
+for i=1:8
+        try_identify_class(cell2mat(experiencias.values({i})),labels,i,0);
+end
 
 
+%%
+test_windows_dft(experiencias(2),labels,2,cell2mat(activity_frame(2).values({2})))
+%%
+%FUNCTIONS
 
+%4.1
 
+function [] = test_windows_dft(file,labels,experience,times)
+    fs = 50; %Hz
+    frame_size = 1; %em segundos
+    N = length(file);
+    tam = fs * frame_size;
+    passo = tam;
 
+    %windows 
+    hamm = hamming(tam);
+    hann = hanning(tam);
+    black = blackman(tam);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-%%functions
-function fin = get_activity_file(experience,user,activity,labels)
-    fin = [];
-    i = 1;
-
-    %find correct file lines for the user given
-    while (labels(2,i) ~= user)
-        i = i+1;
+    disp(times(1,2)-times(1,1));
+    
+    if ( mod(tam,2) == 0 )
+        f_frame=-fs/2:fs/tam:fs/2-fs/tam;
+    else
+        f_frame=-fs/2+fs(2*tam):fs/tam:fs/2+fs/(2*tam);
     end
-    while( labels(1,i) ~= experience)
-        i = i+1;
+
+    for i = 1:tam:N-tam
+        x_ham=file((times(1,1):times(1,2)),1).*hamm;
+        dft_hamming=abs(fftshift(fft(x_ham)));
+        plot(f_frame,dft_hamming);
+        hold on
+
     end
 
-    %get frames for the activity requested
-    while( labels(2,i) == user  && labels(1,i) == experience)
-        
-        if( labels(3,i) == activity)
-            fin = [fin ; [labels(4,i) , labels(5,i)] ];
-        end
-        i = i+1;
+    for i=1:tam:N-tam
+        x_han=file((times(1,1):times(1,2)),1).*hann;
+        dft_hanning=abs(fftshift(fft(x_han)));
+    end
+
+    for i=1:tam:N-tam
+        x_blackman=file((times(1,1):times(1,2)),1).*black;
+        dft_bl=abs(fftshift(fft(x_blackman)));
+    end
+
+    for i=1:tam:N-tam
+        x_rect=file((times(1,1):times(1,2)),1)
+        dft_rect=abs(fftshift(fft(x_rect)))
     end
 end
 
-function [] = print_with_labels(file_data,labels,activityLabels,experiencia)
-   
-    colors = [ [0.9 0.1 0.1] ; [0.8500 0.3250 0.0980] ; [0.9290 0.6940 0.1250] ;[0.4940 0.1840 0.5560] ;[0.4660 0.6740 0.1880] ;[0.3010 0.7450 0.9330] ;[0.6350 0.0780 0.1840]; [0.1 0.9 0.9] ;[0.35 0.15 0.8]; [0.50 0.324 0.124] ;[0 0.3 0.7] ;[0.9 0 0.5] ];
-    i = 1;
-    j = i;
-    x_vals = [];
-    activity = {};
+%3.3
+function[num_steps] = calculate_steps(freqs)
     
-    %Get Labels
-    while(labels(1,i) ~= experiencia)
-        i = i+1;
+    freqs_relevantes = [];
+    [a b] = size(freqs);
+    
+    %Correr todos os intervalos das frequencias relevantes (só estamos a
+    %receber 1 eixo aqui)
+    for i = 1:a
+        get_freq = mean(freqs(i)); %fazer a media do intervalo
+        freqs_relevantes = [ freqs_relevantes ; get_freq]; %adicionar na matriz de frequencias relevantes
+
     end
-    j = i;
+    
+    %Número de passos por minuto é 60 (segundos) a dividir pelo Período,
+    %isto é, o tempo de 1 ciclo completo. 60/ (1/freq)
+    num_steps = 60/(1/mean(freqs_relevantes));
+
+end
+
+%3.4
+function [] = try_identify_class(file, labels, experience, plotit)
+    
+    %plot do ficheiro no eixo x
+    if plotit
+        plot([1:length(file)],file(:,1))
+        hold on;
+        colors = ['r' 'c' 'm'];
+    end
+    
+    act = labels(:, labels(1,:) == experience);
+    
+    nr_real_estaticas = 0;
+    nr_real_dinamicas= 0;
+    nr_real_transicao= 0;
+
+    nr_prev_estaticas = 0;
+    nr_prev_dinamicas= 0;
+    nr_prev_transicao= 0;
+
+    for i = 1:length(act)
+        %loop por todas as atividades do desta experiencia
+        correct_activity = act(3,i);
+        activity_size = act(5,i) - act(4,i);
+
+        %atualizar o nr real da atividade
+        if correct_activity <= 3
+            nr_real_dinamicas = nr_real_dinamicas + 1;
+        elseif correct_activity <= 6
+            nr_real_estaticas= nr_real_estaticas+ 1;
+        else
+            nr_real_transicao= nr_real_transicao+ 1;
+        end
+
+        %prever
+        %calculate dft and get frequencies
+        [c] = get_class(file,[act(4,i) act(5,i)]);
+
+        if c == "estatica" | c == "laying"
+            %estatica
+            nr_prev_estaticas = nr_prev_estaticas + 1 ;
+            
+            if plotit
+                plot([act(4,i):act(5,i)], file( act(4,i):act(5,i) , 1), colors(1) );
+            end
+
+        elseif c == "dinamica"
+            %dinamica
+            nr_prev_dinamicas = nr_prev_dinamicas + 1;
+
+            if plotit
+                plot([act(4,i):act(5,i)], file( act(4,i):act(5,i) , 1), colors(2) );
+            end
+
+        elseif c == "transicao"
+            %transicao
+            nr_prev_transicao = nr_prev_transicao + 1;
+            if plotit
+                plot([act(4,i):act(5,i)], file( act(4,i):act(5,i) , 1), colors(3) );
+            end
+
+        end
+    end
+     
+    %averiguar sensibilidade e especificidade
+    nr_verdadeiros_positivos = 0;
+    nr_falsos_negativos = 0;
+    nr_falsos_positivos = 0;
+
+    test = nr_real_dinamicas - nr_prev_dinamicas;
+
+    if test > 0
+        nr_falsos_negativos = nr_falsos_negativos + test;
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_prev_dinamicas;
+
+    else
+        nr_falsos_positivos = nr_falsos_positivos + abs(test); 
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_real_dinamicas;
+    end
+
+    %disp(nr_real_dinamicas);
+    %disp(nr_prev_dinamicas);
+    
+    test = nr_real_estaticas - nr_prev_estaticas;
+
+    if test > 0
+        nr_falsos_negativos = nr_falsos_negativos + test;
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_prev_estaticas;
+
+    else
+        nr_falsos_positivos = nr_falsos_positivos + abs(test); 
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_real_estaticas;
+    end
+
+    %disp(nr_real_estaticas);
+    %disp(nr_prev_estaticas);
+
+    test = nr_real_transicao - nr_prev_transicao;
+    
+    if test > 0
+        nr_falsos_negativos = nr_falsos_negativos + test;
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_prev_transicao;
+
+    else
+        nr_falsos_positivos = nr_falsos_positivos + abs(test); 
+        nr_verdadeiros_positivos = nr_verdadeiros_positivos + nr_real_transicao;
+    end
+
+    %disp(nr_real_transicao);
+    %disp(nr_prev_transicao);
+    
+    %nr_verdadeiros_negativos = length(act) - nr_falsos_positivos; %????
+
+    sensivity =  nr_verdadeiros_positivos / ( nr_verdadeiros_positivos + nr_falsos_negativos)
+
+    %specificity = nr_verdadeiros_negativos / (nr_verdadeiros_negativos + nr_falsos_positivos)
+
+end
+
+%3.5
+function[class,med_x,med_y,med_z] = get_class(file, times)
+
+    activity_size = times(2) - times(1);
+
+
+    %prever
+    %calculate dft and get frequencies
+    intervalo = [times(1) times(2)];
+    [x,y,z] = DFT_activity(file,intervalo,0,0,0,0);
+    
+    med_x = mean(x);
+    med_y = mean(y);
+    med_z = mean(z);
+
+    if med_x > 1.4
+        %dinamica ou estatica
+        
+        if med_x > 2
+            %Estatica - Standing ou Sit
+            class = "estatica"; 
+
+        else
+            %alguma dinamica
+            class = "dinamica";
+        end
+ 
+
+    elseif med_y > 1.3
+        %Laying - Estatica
+        class = "laying";
+
+    else
+        % frequencia x pequena, frequencia em y pequena
+        % pode ser estatica ou de transicao
+        % vamos comparar através do tamanho da atividade
+
+        if activity_size < 550
+            %transicao, atividade rápida
+            class = "transicao";
+
+        else
+            %estatica - sit
+            class = "estatica";
+        end
+
+    end
+    
+
+
+end
+
+%3.5
+function[nr_real_activities,nr_prev_activities] = try_identify(file,labels,experience)
+    
+
+    act = labels(:, labels(1,:) == experience);
+    nr_real_activities = [0 0 0 0 0 0 0 0 0 0 0 0];
+    nr_prev_activities = [0 0 0 0 0 0 0 0 0 0 0 0];
+
+    for i = 1:length(act)
+        %loop por todas as atividades do desta experiencia
+        correct_activity = act(3,i);
+        activity_size = act(5,i) - act(4,i);
+        intervalo = [act(4,i) act(5,i)];
+
+        %atualizar o nr real da atividade
+        nr_real_activities(correct_activity) = nr_real_activities(correct_activity) + 1; 
+
+        %prever
+        %calculate dft and get frequencies
+        %PREVER ATIVIDADE
+        [prever_classe,med_x,med_y,med_z] = get_class(file,intervalo);
+
+
+        %README - ISTO NÃO ESTÁ COMPLETO E NÃO ESTÁ A FUNCIONAR MUITO BEM
+        if prever_classe == "laying"
+            nr_prev_activities(6) = nr_prev_activities(6) + 1; 
+        
+        elseif prever_classe == "dinamica"
+           %VERIFICAR QUAL DAS DINAMICAS É
+           %nr_prev_activities(2) = nr_prev_activities(2) + 1;
+            disp(med_y)
+            dif_walk = abs(1.74-med_y);
+            dif_walkUp = abs(1.49-med_y);
+            dif_walkDown = abs(1.64-med_y);
+            
+            if med_y > 1.82
+                %Walking down
+                nr_prev_activities(3) = nr_prev_activities(3) + 1;
+            
+            elseif  dif_walkUp < dif_walk & dif_walkUp < dif_walkDown
+                %Walking Up
+                nr_prev_activities(2) = nr_prev_activities(2) + 1; 
+            
+            elseif dif_walk < dif_walkDown & dif_walk < dif_walkUp
+                %Walking
+                nr_prev_activities(1) = nr_prev_activities(1) + 1; 
+
+            else
+                %Walk Down
+                nr_prev_activities(3) = nr_prev_activities(3) + 1;
+    
+            end
+
+
+        elseif prever_classe == "estatica"
+            %nas estaticas só sobra sitting e standing
+            %amplitude baixa
+
+            %nr_prev_activities(5) = nr_prev_activities(5) + 1;
+            dif_sit = abs(4.2551 - med_x);
+            dif_stand = abs(3.9268 - med_x);
+
+            if med_x < 2.30
+                %tem de ser sitting, no standing nunca temos frequencias
+                %abaixo de 2.38
+                nr_prev_activities(4) = nr_prev_activities(4) + 1;
+
+            elseif med_x > 5.5
+                %tem de ser sitting, no standing nunca temos frequencias
+                %acima de 5.39
+                nr_prev_activities(4) = nr_prev_activities(4) + 1;
+            
+            elseif dif_sit < dif_stand
+                %se está no intervalo comum às duas atividades, vamos pelo
+                %que está mais perto da média
+                %neste caso, mais perto da media do sitting
+
+                nr_prev_activities(4) = nr_prev_activities(4) + 1;
+
+            else
+                %standing
+                nr_prev_activities(5) = nr_prev_activities(5) + 1;
+
+            end
+
+        elseif prever_classe == "transicao"
+                %TODO VERIFICAR QUAL DAS TRANSICAO É
+                nr_prev_activities(7) = nr_prev_activities(7) + 1;
+        end
+
+        
+    end
+
+
+
+
+end
+
+%3.2
+function[xf,yf,zf,med_x,med_y,med_z] = get_freqs_filtered(x,y,z)
+        
+    xf = [];
+    yf = [];
+    zf = [];
+    step = 2;
+
+    med_x = mean(x);
+    med_y = mean(y);
+    med_z = mean(z);
 
     %X
-    nexttile
-    plot([1:length(file_data)],file_data(:,1))
-    hold on
-    title("X")
-    min_y = min(file_data(:,1));
-    max_y = max(file_data(:,1));
-
-    while (labels(1,j) == experiencia)
-
-        if mod(j,2) == 0
-            l = text( labels(4,j) , min_y , activityLabels{2}{labels(3,j)} );
-        else
-            l = text( labels(4,j) , max_y, activityLabels{2}{labels(3,j)} );
-        end
-        set(l,'Rotation',50);
-
-        hold on
-
-        plot( [labels(4,j):labels(5,j)]  , file_data( labels(4,j):labels(5,j) , 1) , 'Color',  colors( labels(3,j),: ) )
+    for k = 0:step:max(x)
         
-        j = j+1;
-    end
-    j = i;
+        intervalo = x( x>=k &x <k+step );
 
+        desvio_pad = std(intervalo);
+        med = mean( intervalo );
+        nr_elem = length( intervalo );
+
+        xf = [xf;[med-desvio_pad,med+desvio_pad,nr_elem]];
+    end
     
+
+    %filter the frequencias by the groups that have the most  values
+    %criar intervalo com base na media e no desvio padrao
+    %meter a 0 caso o limite inferior seja inferior a 0
+    number_max_freqs = max(xf(:,3));
+    xf = xf( xf(:,3) >= 0.5*number_max_freqs , 1:2 );
+    xf( : , xf(:,1) < 0) = 0;
+
     %Y
-    nexttile
-    plot([1:length(file_data)],file_data(:,2))
-    title("Y")
-    min_y = min(file_data(:,2));
-    max_y = max(file_data(:,2));
-
-    while (labels(1,j) == experiencia)
-
-        if mod(j,2) == 0
-            l = text( labels(4,j) , min_y , activityLabels{2}{labels(3,j)} );
-        else
-            l = text( labels(4,j) , max_y, activityLabels{2}{labels(3,j)} );
-        end
-        set(l,'Rotation',50);
-
-        hold on
-
-        plot( [labels(4,j):labels(5,j)]  , file_data( labels(4,j):labels(5,j) , 2) , 'Color',  colors( labels(3,j),: ) )
+    for k = 0:step:max(y)
         
-        j = j+1;
-    end
-    j = i;
+        intervalo = y( y>=k & y <k+step );
 
+        desvio_pad = std(intervalo);
+        med = mean( intervalo );
+        nr_elem = length( intervalo );
+
+        yf = [yf;[med-desvio_pad,med+desvio_pad,nr_elem]];
+    end
     
+    number_max_freqs = max(yf(:,3));
+    yf = yf( yf(:,3) >= 0.5*number_max_freqs , 1:2 );
+    yf( : , yf(:,1) < 0) = 0;
+
     %Z
-    nexttile
-    plot([1:length(file_data)],file_data(:,3))
-    title("Z")
-
-    min_y = min(file_data(:,3));
-    max_y = max(file_data(:,3));
-
-    while (labels(1,j) == experiencia)
-
-        if mod(j,2) == 0
-            l = text( labels(4,j) , min_y , activityLabels{2}{labels(3,j)} );
-        else
-            l = text( labels(4,j) , max_y, activityLabels{2}{labels(3,j)} );
-        end
-        set(l,'Rotation',50);
-
-        hold on
-
-        plot( [labels(4,j):labels(5,j)]  , file_data( labels(4,j):labels(5,j) , 3) , 'Color',  colors( labels(3,j),: ) )
+    for k = 0:step:max(z)
         
-        j = j+1;
+        intervalo = z( z>=k & z <k+step );
+
+        desvio_pad = std(intervalo);
+        med = mean( intervalo );
+        nr_elem = length( intervalo );
+
+        zf = [zf;[med-desvio_pad,med+desvio_pad,nr_elem]];
     end
-    j = i;
+
+    number_max_freqs = max(zf(:,3));
+    zf = zf( zf(:,3) >= 0.5*number_max_freqs , 1:2 );
+    zf( : , zf(:,1) < 0) = 0;
 
 end
 
 
+%3.1
 function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude,plot_freqs)
     
     fs = 50; %Hz, sampling frequency
@@ -392,69 +673,121 @@ function[x,y,z] = DFT_activity(file,times,activityLabels,activity,plot_magnitude
 end
 
 
-
-
-function[xf,yf,zf,med_x,med_y,med_z] = get_freqs_filtered(x,y,z)
-        
-    xf = [];
-    yf = [];
-    zf = [];
-    step = 2;
-
-    med_x = mean(x);
-    med_y = mean(y);
-    med_z = mean(z);
+function [] = print_with_labels(file_data,labels,activityLabels,experiencia)
+   
+    colors = [ [0.9 0.1 0.1] ; [0.8500 0.3250 0.0980] ; [0.9290 0.6940 0.1250] ;[0.4940 0.1840 0.5560] ;[0.4660 0.6740 0.1880] ;[0.3010 0.7450 0.9330] ;[0.6350 0.0780 0.1840]; [0.1 0.9 0.9] ;[0.35 0.15 0.8]; [0.50 0.324 0.124] ;[0 0.3 0.7] ;[0.9 0 0.5] ];
+    i = 1;
+    j = i;
+    x_vals = [];
+    activity = {};
+    
+    %Get Labels
+    while(labels(1,i) ~= experiencia)
+        i = i+1;
+    end
+    j = i;
 
     %X
-    for k = 0:step:max(x)
+    nexttile
+    plot([1:length(file_data)],file_data(:,1))
+    hold on
+    title("X")
+    min_y = min(file_data(:,1));
+    max_y = max(file_data(:,1));
+
+    while (labels(1,j) == experiencia)
+
+        if mod(j,2) == 0
+            l = text( labels(4,j) , min_y , activityLabels{2}{labels(3,j)} );
+        else
+            l = text( labels(4,j) , max_y, activityLabels{2}{labels(3,j)} );
+        end
+        set(l,'Rotation',50);
+
+        hold on
+
+        plot( [labels(4,j):labels(5,j)]  , file_data( labels(4,j):labels(5,j) , 1) , 'Color',  colors( labels(3,j),: ) )
         
-        intervalo = x( x>=k &x <k+step );
-
-        desvio_pad = std(intervalo);
-        med = mean( intervalo );
-        nr_elem = length( intervalo );
-
-        xf = [xf;[med-desvio_pad,med+desvio_pad,nr_elem]];
+        j = j+1;
     end
+    j = i;
+
     
-
-    %filter the frequencias by the groups that have the most  values
-    %criar intervalo com base na media e no desvio padrao
-    %meter a 0 caso o limite inferior seja inferior a 0
-    number_max_freqs = max(xf(:,3));
-    xf = xf( xf(:,3) >= 0.5*number_max_freqs , 1:2 );
-    xf( : , xf(:,1) < 0) = 0;
-
     %Y
-    for k = 0:step:max(y)
+    nexttile
+    plot([1:length(file_data)],file_data(:,2))
+    title("Y")
+    min_y = min(file_data(:,2));
+    max_y = max(file_data(:,2));
+
+    while (labels(1,j) == experiencia)
+
+        if mod(j,2) == 0
+            l = text( labels(4,j) , min_y , activityLabels{2}{labels(3,j)} );
+        else
+            l = text( labels(4,j) , max_y, activityLabels{2}{labels(3,j)} );
+        end
+        set(l,'Rotation',50);
+
+        hold on
+
+        plot( [labels(4,j):labels(5,j)]  , file_data( labels(4,j):labels(5,j) , 2) , 'Color',  colors( labels(3,j),: ) )
         
-        intervalo = y( y>=k & y <k+step );
-
-        desvio_pad = std(intervalo);
-        med = mean( intervalo );
-        nr_elem = length( intervalo );
-
-        yf = [yf;[med-desvio_pad,med+desvio_pad,nr_elem]];
+        j = j+1;
     end
+    j = i;
+
     
-    number_max_freqs = max(yf(:,3));
-    yf = yf( yf(:,3) >= 0.5*number_max_freqs , 1:2 );
-    yf( : , yf(:,1) < 0) = 0;
-
     %Z
-    for k = 0:step:max(z)
+    nexttile
+    plot([1:length(file_data)],file_data(:,3))
+    title("Z")
+
+    min_y = min(file_data(:,3));
+    max_y = max(file_data(:,3));
+
+    while (labels(1,j) == experiencia)
+
+        if mod(j,2) == 0
+            l = text( labels(4,j) , min_y , activityLabels{2}{labels(3,j)} );
+        else
+            l = text( labels(4,j) , max_y, activityLabels{2}{labels(3,j)} );
+        end
+        set(l,'Rotation',50);
+
+        hold on
+
+        plot( [labels(4,j):labels(5,j)]  , file_data( labels(4,j):labels(5,j) , 3) , 'Color',  colors( labels(3,j),: ) )
         
-        intervalo = z( z>=k & z <k+step );
-
-        desvio_pad = std(intervalo);
-        med = mean( intervalo );
-        nr_elem = length( intervalo );
-
-        zf = [zf;[med-desvio_pad,med+desvio_pad,nr_elem]];
+        j = j+1;
     end
-
-    number_max_freqs = max(zf(:,3));
-    zf = zf( zf(:,3) >= 0.5*number_max_freqs , 1:2 );
-    zf( : , zf(:,1) < 0) = 0;
+    j = i;
 
 end
+
+
+function fin = get_activity_file(experience,user,activity,labels)
+    fin = [];
+    i = 1;
+
+    %find correct file lines for the user given
+    while (labels(2,i) ~= user)
+        i = i+1;
+    end
+
+    while( labels(1,i) ~= experience)
+        i = i+1;
+    end
+
+    %get frames for the activity requested
+    while( labels(2,i) == user  && labels(1,i) == experience)
+        
+        if( labels(3,i) == activity)
+            fin = [fin ; [labels(4,i) , labels(5,i)] ];
+        end
+        i = i+1;
+    end
+
+
+end
+
