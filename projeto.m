@@ -399,14 +399,46 @@ try_identify_class(dataExp5user3,labels,5,1);
 %4
 %4.1
 %ficheiro escolhido: user1 experiencia 2
-test_windows_dft(dataExp2user1,walk_Exp4_Us2,labels,2)
+%test_windows_stft(dataExp2user1,walk_Exp4_Us2,labels,2)
+
+%stft(dataExp2user1(:,1),50,'Window',kaiser(256,5))
+%[stft_x,stft_y,stft_z] = calculate_stft(dataExp2user1,50);
 
 %%
 %FUNCTIONS
 
-%4.1
+%4.2
 
-function [] = test_windows_dft(file,times,labels,experience)
+function [stft_x,stft_y,stft_z] = calculate_stft(segment,win_size)
+
+    stft_x = [];
+    stft_y = [];
+    stft_z = [];
+
+    if ( mod(win_size,2) == 0 )
+        f_frame=-50/2:50/win_size:50/2-50/win_size;
+    else
+        f_frame=-50/2+50*(2*win_size):50/win_size:50/2+50/(2*win_size);
+    end
+
+    for i = 1:length(file)-win_size
+        m_x = abs(fftshift(fft( segment( i:i+win_size-1 ,1) )));
+        m_y = abs(fftshift(fft( segment( i:i+win_size-1 ,2) )));
+        m_z = abs(fftshift(fft( segment( i:i+win_size-1 ,3) )));
+        
+        plot(f_frame,m_x)
+        hold on;
+
+        stft_x = [stft_x ; m_x];
+        stft_y = [stft_y ; m_y];
+        stft_z = [stft_z ; m_z];
+    end
+
+
+end
+
+%4.1
+function [] = test_windows_stft(file,times,labels,experience)
     fs = 50; %Hz
     frame_size = 1; %em segundos
     N = length(file);
