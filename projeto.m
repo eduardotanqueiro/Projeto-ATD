@@ -384,10 +384,10 @@ num_steps_walkDown = calculate_steps(x_walkDown)
 %%
 %3.4
 %mean transition size
-%act = labels( 4:5, labels(3,:) >= 6);
-%med_transicao = abs( sum(act(2,:)) - sum(act(1,:)) ) / length(act);
-
-try_identify_class(dataExp5user3,labels,5,1);
+act = labels( 4:5, labels(3,:) > 6);
+%med_transicao = abs( sum(act(2,:)) - sum(act(1,:)) ) / length(act)
+%min_transicao = min(abs( act(2,:) - act(1,:) ))
+%try_identify_class(dataExp5user3,labels,5,1);
 
 
 %%
@@ -400,62 +400,78 @@ try_identify_class(dataExp5user3,labels,5,1);
 %4.1
 %ficheiro escolhido: user1 experiencia 2
 test_windows_stft(dataExp2user1,walk_Exp2_Us1)
-
-%stft(dataExp2user1(:,1),50,'Window',kaiser(256,5))
+%%
+%4.3
+fs = 50;
+stft(dataExp3user2(250:1232,3),fs,'Window',hann(150),'OverlapLength',75)
+calculate_stft(dataExp3user2(250:1232,3),150,fs,1);
 
 
 %%
 %FUNCTIONS
 
 %4.2
-function [stft] = calculate_stft(segment,win_size)
+function [stft,f_frame,time_frame] = calculate_stft(segment,win_size,fs,plotit)
 
     stft = [];
+    time_frames = [];
+    n_frame = 0;
+    N = length(segment);
+
+    hann = hanning(win_size);
 
     if ( mod(win_size,2) == 0 )
-        f_frame=-50/2:50/win_size:50/2-50/win_size;
+        f_frame = -fs/2:fs/win_size:fs/2-fs/win_size;
     else
-        f_frame=-50/2+50*(2*win_size):50/win_size:50/2+50/(2*win_size);
+        f_frame = -fs/2+fs/(2*win_size):fs/win_size:fs/2-fs/(2*win_size);
     end
 
-    for i = 1:length(file)-win_size
-        mag_dft = abs(fftshift(fft( segment(i:i+win_size-1) )));
+    passo = round(win_size/2);
 
-        
-        plot(f_frame,mag_dft)
-        hold on;
+    for i = 1 : passo : N-win_size
+        mag_dft = abs(fftshift(fft( segment(i:i+win_size-1) .* hann )));
 
-        stft = [ stft ; mag_dft];
+        time_frames = [time_frames n_frame*passo/fs];
+        n_frame = n_frame + 1;
+
+        stft = [stft mag_dft];
     
     end
 
+
+
+    if plotit
+        figure();
+        imagesc('XData',time_frames,'CData',mag2db(stft))
+        %surf(time_frames,f_frame,mag2db(stft))
+        colorbar
+        xlabel('t [s]')
+        ylabel('f [Hz]')
+        title(['STFT | Window size: ',num2str(win_size,'%.1f'), ' points'])
+    end
 
 end
 
 %4.1
 function [] = test_windows_stft(file,times)
-    fs = 50; %Hz
-    frame_size = 1; %em segundos
     N = length(file);
-    tam = fs * frame_size;
-    passo = tam;
-
+    fs = 50;
     %windows 
-    hamm = hamming(tam);
-    hann = hanning(tam);
-    black = blackman(tam);
+    hamm = hamming(N);
+    hann = hanning(N);
+    black = blackman(N);
 
     %Plot das janelas
-    %wvtool(hamm);
-    %wvtool(hann);
-    %wvtool(black);
+    wvtool(hamm);
+    wvtool(hann);
+    wvtool(black);
 
     %ATIVIDADE ESCOLHIDA: 1 - WALKING
     
-    if ( mod(tam,2) == 0 )
-        f_frame=-fs/2:fs/tam:fs/2-fs/tam;
+    if ( mod(N,2) == 0 )
+        f_frame=-fs/2:fs/N:fs/2-fs/N;
     else
-        f_frame=-fs/2+fs(2*tam):fs/tam:fs/2+fs/(2*tam);
+        f_frame=-fs/2+fs(2*N):fs/N:fs/2+fs/(2*N);
     end
 
     %Calcular DFT com diferentes janelas para o segmento desta atividade,
@@ -463,48 +479,46 @@ function [] = test_windows_stft(file,times)
     
     %hann
     nexttile;
-    for i = times(1,1) : passo : times(1,2)-passo
-        dft = abs(fftshift(fft( file( i:i+passo-1 ,  1) .* hann )));
-        
-        hold on;
-        plot(f_frame,dft)
-    end
+
+    dft = abs(fftshift(fft( file( : ,  3) .* hann )));
+    dft( abs(f_frame) <0.15) = 0;
+    
+    hold on;
+    plot(f_frame,dft)
+
     title('|DFT| do sinal com janela Hann'); 
     ylabel('Magnitude = |X|');
     xlabel('f [Hz]');
 
     %hamming
     nexttile;
-    for i = times(1,1) : passo : times(1,2)-passo
-        dft = abs(fftshift(fft( file( i:i+passo-1 ,  1) .* hamm )));
-        
-        hold on;
-        plot(f_frame,dft)
-    end
+    dft = abs(fftshift(fft( file( :,  3) .* hamm )));
+    dft( abs(f_frame) <0.15) = 0;
+    hold on;
+    plot(f_frame,dft)
+
     title('|DFT| do sinal com janela Hamming'); 
     ylabel('Magnitude = |X|');
     xlabel('f [Hz]');
 
     %blackman
     nexttile;
-    for i = times(1,1) : passo : times(1,2)-passo
-        dft = abs(fftshift(fft( file( i:i+passo-1 ,  1) .* black )));
-        
-        hold on;
-        plot(f_frame,dft)
-    end
+    dft = abs(fftshift(fft( file( : ,  3) .* black )));
+    dft( abs(f_frame) <0.15) = 0;
+    hold on;
+    plot(f_frame,dft)
+
     title('|DFT| do sinal com janela Blackman'); 
     ylabel('Magnitude = |X|');
     xlabel('f [Hz]');
 
     %retangular
     nexttile;
-    for i = times(1,1) : passo : times(1,2)-passo
-        dft = abs(fftshift(fft( file( i:i+passo-1 ,  1) )));
-        
-        hold on;
-        plot(f_frame,dft)
-    end
+    dft = abs(fftshift(fft( file( : ,  3) )));
+    dft( abs(f_frame) <0.15) = 0;
+    hold on;
+    plot(f_frame,dft)
+
     title('|DFT| do sinal com janela Retangular'); 
     ylabel('Magnitude = |X|');
     xlabel('f [Hz]');
